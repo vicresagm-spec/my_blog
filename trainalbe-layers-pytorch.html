@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Understanding Trainable Layers in PyTorch</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    line-height:1.7;
+    margin:40px;
+    max-width:900px;
+}
+
+h1{
+    color:#1a1a1a;
+}
+
+h2{
+    margin-top:40px;
+    color:#333;
+}
+
+code{
+    background:#f4f4f4;
+    padding:4px 6px;
+}
+
+pre{
+    background:#f4f4f4;
+    padding:15px;
+    overflow-x:auto;
+}
+
+table{
+    border-collapse:collapse;
+    width:100%;
+}
+
+table,th,td{
+    border:1px solid #ddd;
+}
+
+th,td{
+    padding:10px;
+    text-align:left;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Understanding Trainable Layers in PyTorch</h1>
+
+<p>
+When building neural networks, one concept that often confuses beginners is the idea of a 
+<strong>trainable layer</strong>.  
+A trainable layer is any layer that contains parameters that are updated during training 
+using backpropagation.
+</p>
+
+<hr>
+
+<h2>What Makes a Layer Trainable?</h2>
+
+<p>
+A layer is trainable if it contains <strong>parameters such as weights or biases</strong>.
+</p>
+
+<p>During training the following steps happen:</p>
+
+<ol>
+<li>The model makes a prediction</li>
+<li>The loss function measures the error</li>
+<li>Gradients are calculated</li>
+<li>The optimizer updates parameters</li>
+</ol>
+
+<p>
+Only layers with parameters can be updated. These are called <strong>trainable layers</strong>.
+</p>
+
+<hr>
+
+<h2>The Simplest Test</h2>
+
+<p>Ask this question:</p>
+
+<p><strong>Does this layer have weights or bias?</strong></p>
+
+<ul>
+<li>Yes → Trainable</li>
+<li>No → Not trainable</li>
+</ul>
+
+<hr>
+
+<h2>Common Trainable Layers in PyTorch</h2>
+
+<table>
+<tr>
+<th>Layer</th>
+<th>Why it is Trainable</th>
+</tr>
+
+<tr>
+<td>nn.Linear</td>
+<td>Contains weight and bias</td>
+</tr>
+
+<tr>
+<td>nn.Conv2d</td>
+<td>Contains convolution kernels</td>
+</tr>
+
+<tr>
+<td>nn.BatchNorm</td>
+<td>Contains learnable scale and shift</td>
+</tr>
+
+<tr>
+<td>nn.Embedding</td>
+<td>Contains embedding matrix</td>
+</tr>
+
+</table>
+
+<p>Example:</p>
+
+<pre>
+self.fc = nn.Linear(10,5)
+</pre>
+
+<p>This layer internally contains:</p>
+
+<pre>
+weight : (5,10)
+bias   : (5)
+</pre>
+
+<p>These parameters are updated during training.</p>
+
+<hr>
+
+<h2>Non-Trainable Layers</h2>
+
+<p>
+Some layers perform operations but do not learn parameters.
+</p>
+
+<table>
+
+<tr>
+<th>Layer</th>
+<th>Reason</th>
+</tr>
+
+<tr>
+<td>ReLU</td>
+<td>Applies max(0,x)</td>
+</tr>
+
+<tr>
+<td>Sigmoid</td>
+<td>Mathematical transformation</td>
+</tr>
+
+<tr>
+<td>Dropout</td>
+<td>Random masking</td>
+</tr>
+
+<tr>
+<td>MaxPool</td>
+<td>Selects maximum value</td>
+</tr>
+
+<tr>
+<td>Flatten</td>
+<td>Changes tensor shape</td>
+</tr>
+
+</table>
+
+<p>Example:</p>
+
+<pre>
+x = torch.relu(x)
+</pre>
+
+<p>
+ReLU simply applies the function <code>max(0,x)</code>.  
+It contains no parameters and therefore is not trainable.
+</p>
+
+<hr>
+
+<h2>Important Rule When Building Models</h2>
+
+<p>
+All trainable layers must be defined inside <code>__init__</code> and referenced using <code>self</code>.
+</p>
+
+<pre>
+class Model(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+        self.fc1 = nn.Linear(2,4)
+        self.fc2 = nn.Linear(4,1)
+
+    def forward(self,x):
+
+        x = torch.relu(self.fc1(x))
+        x = self.fc2(x)
+
+        return x
+</pre>
+
+<p>
+PyTorch discovers parameters through:
+</p>
+
+<pre>
+model.parameters()
+</pre>
+
+<hr>
+
+<h2>Common Beginner Mistake</h2>
+
+<p>Defining trainable layers inside the forward function:</p>
+
+<pre>
+def forward(self,x):
+
+    fc = nn.Linear(2,4)
+
+    return fc(x)
+</pre>
+
+<p>This is incorrect because:</p>
+
+<ul>
+<li>New weights are created every forward pass</li>
+<li>The optimizer never sees them</li>
+<li>The model never learns</li>
+</ul>
+
+<hr>
+
+<h2>Mental Model</h2>
+
+<p>Think of a neural network as a factory:</p>
+
+<ul>
+<li><strong>Trainable layers</strong> → machines with adjustable knobs</li>
+<li><strong>Activation functions</strong> → fixed rules</li>
+</ul>
+
+<p>Training adjusts the knobs to reduce prediction error.</p>
+
+<hr>
+
+<h2>Final Takeaway</h2>
+
+<p>
+Trainable layers are the parts of a neural network that contain parameters and get updated during training.
+</p>
+
+<p>
+If a component has <strong>no parameters</strong>, it is not trainable — even if it is called a layer.
+</p>
+
+</body>
+</html>
